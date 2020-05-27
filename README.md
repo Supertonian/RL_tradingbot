@@ -13,4 +13,4 @@
    - Docker: https://hub.docker.com/r/pytorch/pytorch/
  - 기타 라이브러리 설치
    - pip install -r requirements.txt
-   
+ - python deepq_trading.py
