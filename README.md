@@ -1,11 +1,14 @@
 # RL_tradingbot
 강화학습을 이용한 주식 봇
 
-## Deep Q learning
+## DQN
+- (실행방법) python DQN/bot_simple.py
+- 결과
 
+![Alt text](DQN/screenshots/dqn_result.JPG "DQN result")
 
 ## A3C
-
+- TODO
 
 ### 설치
  - PyTorch 설치
@@ -13,4 +16,4 @@
    - Docker: https://hub.docker.com/r/pytorch/pytorch/
  - 기타 라이브러리 설치
    - pip install -r requirements.txt
- - python deepq_trading.py
+ 
