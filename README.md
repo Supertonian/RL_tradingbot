@@ -2,10 +2,10 @@
 강화학습을 이용한 주식 봇
 
 ## DQN
-- (실행방법) python DQN/bot_simple.py
+- (실행방법) python "1. DQN\bot_simple.py"
 - 결과
 
-![Alt text](DQN/screenshots/dqn_result.JPG "DQN result")
+![Alt text](screenshots/dqn_result.JPG "DQN result")
 
 ## A3C
 - TODO
