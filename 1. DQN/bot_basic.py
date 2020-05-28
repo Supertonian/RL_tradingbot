@@ -9,12 +9,13 @@ import torch.optim as optim
 import torch.nn.functional as F
 import pandas_datareader as pdr
 from pykrx import stock
+import matplotlib.pyplot as plt
 
 # 국내면 뒤에 .KR을 붙이세여
-CODE = '081150.KR'
+CODE = 'MRNA'
 START_DATE = '2020-01-01'
 END_DATE = '2020-05-28'
-TRAIN_RATIO = 0.8
+TRAIN_RATIO = 0.7
 
 def dataset_loaderKR(stock_name, start, end, train_ratio=0.7):
   dataset = stock.get_market_ohlcv_by_date("".join(start.split('-')), "".join(end.split('-')), stock_name.split('.KR')[0])
@@ -24,13 +25,13 @@ def dataset_loaderKR(stock_name, start, end, train_ratio=0.7):
   return dataset[:date_split], dataset[date_split:], date_split
 
 # 야후 금융에서 조회하여 train, test로 나눔
-def dataset_loader(stock_name, start, train_ratio):
-  dataset = pdr.DataReader(stock_name, data_source="yahoo", start=start)
+def dataset_loader(stock_name, start, end, train_ratio=0.7):
+  dataset = pdr.DataReader(stock_name, data_source="yahoo", start=start, end=end)
   date_split = str(dataset.index[int(train_ratio*len(dataset))]).split(' ')[0]
 
   return dataset[:date_split], dataset[date_split:], date_split
 
-if 'KR' in CODE:
+if '.KR' == CODE[-3:]:
     (train, test, date_split) = dataset_loaderKR(CODE, START_DATE, END_DATE, TRAIN_RATIO)
 else:
     (train, test, date_split) = dataset_loader(CODE, START_DATE, END_DATE, TRAIN_RATIO)
@@ -38,58 +39,58 @@ else:
 print("test from ", date_split)
 
 class Environment1:
-    
-    def __init__(self, data, history_t=90):
-        self.data = data
-        self.history_t = history_t
-        self.reset()
-        
-    def reset(self):
-        self.t = 0
-        self.done = False
-        self.profits = 0
-        self.positions = []
-        self.position_value = 0
-        self.history = [0 for _ in range(self.history_t)]
-        return [self.position_value] + self.history # obs
 
-    def step(self, act):
-        reward = 0
-        
-        # action
-		# 0: Idle
-		# 1: 매수
-		# 2: 매도
-        if act == 1: #매수
-            self.positions.append(self.data.iloc[self.t, :]['Close'])
-        elif act == 2: # 매도
-            if len(self.positions) == 0:
-                reward = -1
-            else:
-                profits = 0
-                for p in self.positions:
-                    profits += (self.data.iloc[self.t, :]['Close'] - p)
-                reward += profits
-                self.profits += profits
-                self.positions = []
-        
-        # set next time
-        self.t += 1
-        
-        self.position_value = 0
-        for p in self.positions:
-            self.position_value += (self.data.iloc[self.t, :]['Close'] - p)
-        self.history.pop(0)
-        self.history.append(self.data.iloc[self.t, :]['Close'] - self.data.iloc[(self.t-1), :]['Close'])
-        if (self.t==len(self.data)-1):
-            self.done=True
-        # clipping reward
-        if reward > 0:
-            reward = 1
-        elif reward < 0:
-            reward = -1
-        #print ("t={%d}, done={%str}"%(self.t,self.done))
-        return [self.position_value] + self.history, reward, self.done # obs, reward, done
+def __init__(self, data, history_t=90):
+	self.data = data
+	self.history_t = history_t
+	self.reset()
+	
+def reset(self):
+	self.t = 0
+	self.done = False
+	self.profits = 0
+	self.positions = []
+	self.position_value = 0
+	self.history = [0 for _ in range(self.history_t)]
+	return [self.position_value] + self.history # obs
+
+def step(self, act):
+	reward = 0
+	
+	# action
+	# 0: Idle
+	# 1: 매수
+	# 2: 매도
+	if act == 1: #매수
+		self.positions.append(self.data.iloc[self.t, :]['Close'])
+	elif act == 2: # 매도
+		if len(self.positions) == 0:
+			reward = -1
+		else:
+			profits = 0
+			for p in self.positions:
+				profits += (self.data.iloc[self.t, :]['Close'] - p)
+			reward += profits
+			self.profits += profits
+			self.positions = []
+	
+	# set next time
+	self.t += 1
+	
+	self.position_value = 0
+	for p in self.positions:
+		self.position_value += (self.data.iloc[self.t, :]['Close'] - p)
+	self.history.pop(0)
+	self.history.append(self.data.iloc[self.t, :]['Close'] - self.data.iloc[(self.t-1), :]['Close'])
+	if (self.t==len(self.data)-1):
+		self.done=True
+	# clipping reward
+	if reward > 0:
+		reward = 1
+	elif reward < 0:
+		reward = -1
+	#print ("t={%d}, done={%str}"%(self.t,self.done))
+	return [self.position_value] + self.history, reward, self.done # obs, reward, done
 
 env = Environment1(train)
 env.reset()
@@ -256,3 +257,17 @@ elif next_action == 1:
 else:
 	print('오늘은 쉬어요!')
 
+
+
+buy_dates = test.loc[test['Action'] ==1].index.values
+sell_dates = test.loc[test['Action'] ==2].index.values
+
+buy_close = test.loc[test['Action'] ==1, 'Close'].values
+sell_close = test.loc[test['Action'] ==2, 'Close'].values
+
+fig = plt.figure(figsize=(15,9))
+
+plt.plot(test['Close'])
+plt.scatter(buy_dates, buy_close, label='skitscat', color='red', s=50, marker="^")
+plt.scatter(sell_dates, sell_close, label='skitscat', color='blue', s=50, marker="v")
+plt.show()
