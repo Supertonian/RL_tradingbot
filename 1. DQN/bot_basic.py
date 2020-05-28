@@ -8,10 +8,20 @@ from torch.autograd import Variable
 import torch.optim as optim
 import torch.nn.functional as F
 import pandas_datareader as pdr
+from pykrx import stock
 
-CODE = 'UDOW'
+# 국내면 뒤에 .KR을 붙이세여
+CODE = '005930.KR'
 START_DATE = '2020-01-01'
+END_DATE = '2020-05-28'
 TRAIN_RATIO = 0.8
+
+def dataset_loaderKR(stock_name, start, end, train_ratio=0.7):
+  dataset = stock.get_market_ohlcv_by_date("".join(start.split('-')), "".join(end.split('-')), stock_name)
+  dataset['Close'] = dataset['종가']
+  date_split = str(dataset.index[int(train_ratio*len(dataset))])
+
+  return dataset[:date_split], dataset[date_split:], date_split
 
 # 야후 금융에서 조회하여 train, test로 나눔
 def dataset_loader(stock_name, start, train_ratio):
@@ -19,8 +29,13 @@ def dataset_loader(stock_name, start, train_ratio):
   date_split = str(dataset.index[int(train_ratio*len(dataset))]).split(' ')[0]
 
   return dataset[:date_split], dataset[date_split:], date_split
-  
-(train, test, date_split) = dataset_loader(CODE, START_DATE, TRAIN_RATIO)
+
+if '.KS' in CODE:
+    loader = dataset_loaderKR
+else:
+    loader = dataset_loader
+
+(train, test, date_split) = loader(CODE, START_DATE, TRAIN_RATIO)
 
 print("test from ", date_split)
 
