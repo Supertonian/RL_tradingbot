@@ -11,13 +11,13 @@ import pandas_datareader as pdr
 from pykrx import stock
 
 # 국내면 뒤에 .KR을 붙이세여
-CODE = '005930.KR'
+CODE = '081150.KR'
 START_DATE = '2020-01-01'
 END_DATE = '2020-05-28'
 TRAIN_RATIO = 0.8
 
 def dataset_loaderKR(stock_name, start, end, train_ratio=0.7):
-  dataset = stock.get_market_ohlcv_by_date("".join(start.split('-')), "".join(end.split('-')), stock_name)
+  dataset = stock.get_market_ohlcv_by_date("".join(start.split('-')), "".join(end.split('-')), stock_name.split('.KR')[0])
   dataset['Close'] = dataset['종가']
   date_split = str(dataset.index[int(train_ratio*len(dataset))])
 
@@ -30,12 +30,10 @@ def dataset_loader(stock_name, start, train_ratio):
 
   return dataset[:date_split], dataset[date_split:], date_split
 
-if '.KS' in CODE:
-    loader = dataset_loaderKR
+if 'KR' in CODE:
+    (train, test, date_split) = dataset_loaderKR(CODE, START_DATE, END_DATE, TRAIN_RATIO)
 else:
-    loader = dataset_loader
-
-(train, test, date_split) = loader(CODE, START_DATE, TRAIN_RATIO)
+    (train, test, date_split) = dataset_loader(CODE, START_DATE, END_DATE, TRAIN_RATIO)
 
 print("test from ", date_split)
 
