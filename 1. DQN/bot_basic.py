@@ -11,12 +11,7 @@ import pandas_datareader as pdr
 from pykrx import stock
 import matplotlib.pyplot as plt
 
-# 국내면 뒤에 .KR을 붙이세여
-CODE = 'MRNA'
-START_DATE = '2020-01-01'
-END_DATE = '2020-05-28'
-TRAIN_RATIO = 0.7
-
+# 금융정보 조회하기
 def dataset_loaderKR(stock_name, start, end, train_ratio=0.7):
   dataset = stock.get_market_ohlcv_by_date("".join(start.split('-')), "".join(end.split('-')), stock_name.split('.KR')[0])
   dataset['Close'] = dataset['종가']
@@ -31,13 +26,20 @@ def dataset_loader(stock_name, start, end, train_ratio=0.7):
 
   return dataset[:date_split], dataset[date_split:], date_split
 
+# 국내면 뒤에 .KR을 붙이세여
+CODE = 'MRNA'
+START_DATE = '2019-09-01'
+END_DATE = '2020-05-29'
+TRAIN_RATIO = 0.8
+
 if '.KR' == CODE[-3:]:
     (train, test, date_split) = dataset_loaderKR(CODE, START_DATE, END_DATE, TRAIN_RATIO)
 else:
     (train, test, date_split) = dataset_loader(CODE, START_DATE, END_DATE, TRAIN_RATIO)
 
-print("test from ", date_split)
+print("test from", date_split)
 
+# ENV 설정
 class Environment1:
 
 def __init__(self, data, history_t=90):
@@ -92,9 +94,7 @@ def step(self, act):
 	#print ("t={%d}, done={%str}"%(self.t,self.done))
 	return [self.position_value] + self.history, reward, self.done # obs, reward, done
 
-env = Environment1(train)
-env.reset()
-
+# MODEL
 class Q_Network(nn.Module):
     def __init__(self,obs_len,hidden_size,actions_n):
         super(Q_Network,self).__init__()
@@ -108,6 +108,10 @@ class Q_Network(nn.Module):
     def forward(self,x):
         h = self.fc_val(x)
         return (h)
+
+# 학습 시키기
+env = Environment1(train)
+env.reset()
 
 hidden_size = 100
 input_size = env.history_t+1
@@ -212,9 +216,11 @@ for epoch in range(epoch_num):
             log_reward = sum(total_rewards[((epoch+1)-show_log_freq):])/show_log_freq
             log_loss = sum(total_losses[((epoch+1)-show_log_freq):])/show_log_freq
             elapsed_time = time.time()-start
-            print('\t'.join(map(str, [epoch+1, epsilon, total_step, log_reward, log_loss, elapsed_time])))
+            #print('\t'.join(map(str, [epoch+1, epsilon, total_step, log_reward, log_loss, elapsed_time])))
             start = time.time()
+    print("Epoch %d" % (epoch+1))
 
+# TEST
 test_env = Environment1(test)
 pobs = test_env.reset()
 test_acts = []
@@ -256,8 +262,6 @@ elif next_action == 1:
 	print('오늘은 매수!')
 else:
 	print('오늘은 쉬어요!')
-
-
 
 buy_dates = test.loc[test['Action'] ==1].index.values
 sell_dates = test.loc[test['Action'] ==2].index.values
