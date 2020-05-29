@@ -6,6 +6,7 @@
 - 결과
 
 ![Alt text](screenshots/dqn_result.JPG "DQN result")
+![Alt text](screenshots/dqn_result_chart.JPG "DQN result chart")
 
 ## 2. A3C
 - TODO
