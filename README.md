@@ -9,7 +9,7 @@
 ![Alt text](screenshots/dqn_result_chart.JPG "DQN result chart")
 
 ## 2. A3C
-- TODO
+- (실행방법) python "2. A3C\bot_simple.py"
 
 ### 설치
  - PyTorch 설치
